@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>Workspace</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" th:href="@{/css/workspace.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header.html :: header}"></div>
+<main class="w-100 m-auto">
+    <div class="">
+        <div class="d-flex flex-row" style="min-height: 100vh;">
+            <div th:replace="~{fragments/sidebar.html :: sidebar}"></div>
+            <div class="d-flex flex-column" style="width: 80%;padding: 4em">
+                <div th:replace="~{fragments/workspace-header.html :: workspace-header}"></div>
+                <hr>
+                <div class="d-flex flex-column" style="padding: 1em;">
+                    <div style="font-size: 18px; margin-bottom: 1em;font-weight: bold;">Доски</div>
+                    <div class="">
+                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                            <div class="col">
+                                <button type="button" class="card h-100 w-100 bg-primary d-flex align-items-center justify-content-center" style="min-height: 100px;" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                        <img th:src="@{/svg/plus-solid.svg}" style="height: 30px;" alt="">
+                                </button>
+                                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                        <div class="modal-content">
+                                            <div class="d-flex" style="padding: 1em;">
+                                                <div class="d-flex flex-grow-1 justify-content-center">
+                                                    <span class="modal-title" id="exampleModalLabel" style="font-size: 15px;">Создать доску</span>
+                                                </div>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="font-size: 13px;"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="createBoardForm" method="post">
+                                                    <p id="msg" style="color: red;"></p>
+                                                    <input type="hidden" id="workspaceId" th:value="${workspace} ? ${workspace.id} : ''">
+                                                    <div class="">
+                                                        <label for="boardName" class="form-label" style="font-size: 14px;color:dimgray;">Заголовок доски</label>
+                                                        <input type="text" class="form-control" id="boardName" placeholder="Укажите название доски">
+                                                    </div>
+                                                    <div class="" style="margin-top: 1em;">
+                                                        <label for="boardDescription" class="form-label" style="font-size: 14px;color:dimgray;">Описание доски</label>
+                                                        <textarea class="form-control" aria-label="With textarea" placeholder="Расскажите участникам немного о доске" id="boardDescription"></textarea>
+                                                    </div>
+                                                    <div style="margin-top: 1em;">
+                                                        <label for="boardVisibility" class="form-label" style="font-size: 14px;color:dimgray;">Видимость доски</label>
+                                                        <select class="form-select" aria-label="Default select example" id="boardVisibility">
+                                                            <option th:if="${boardVisibilities}" th:each="v : ${boardVisibilities}" th:value="${v}" th:text="${v}">Option</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="d-flex flex-row" style="margin-top: 2em;">
+                                                        <button class="btn btn-primary flex-grow-1" type="submit" id="createBoardBtn">Создать</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col" th:if="${workspace != null and CUR_USER_BOARDS != null}" th:each="board: ${CUR_USER_BOARDS}">
+                                <a class="card h-100" th:href="@{/workspaces/{wId}/boards/{bId}(wId=${workspace.id},bId=${board.id})}" style="min-height: 100px;text-decoration: none;">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-row align-items-start justify-content-start">
+                                            <span class="card-title" style="font-size: 18px;font-weight: bold;" th:text="${board.title}">Board title</span>
+                                            <span th:if="${board.boardVisibility == 'WORKSPACE'}" style="margin-left: 0.4em;"><img th:src="@{/svg/lock-open-solid.svg}" alt="" style="width: 15px;"></span>
+                                            <span th:if="${board.boardVisibility == 'PRIVATE'}" style="margin-left: 0.4em;"><img th:src="@{/svg/lock-solid.svg}" alt="" style="width: 12px;"></span>
+                                        </div>
+                                        <p class="card-text" style="font-size: 14px;color: gray;" th:text="${board.description}">Board Description</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="d-flex flex-row justify-content-evenly">
+                                            <div class="d-flex flex-row align-items-center">
+                                                <img th:src="@{/svg/user-solid (2).svg}" style="height: 13px;margin-right: 5px;" alt="">
+                                                <small class="text-body-secondary" th:text="${board.membersCount}">Members Count</small>
+                                            </div>
+                                            <div class="d-flex flex-row align-items-center">
+                                                <img th:src="@{/svg/list-solid.svg}" style="height: 13px;margin-right: 5px;" alt="">
+                                                <small class="text-body-secondary" th:text="${board.cardsCount}">Cards Count</small>
+                                            </div>
+                                            <div class="d-flex flex-row align-items-center">
+                                                <img th:src="@{/svg/calendar-days-solid.svg}" style="height: 13px;margin-right: 5px;" alt="">
+                                                <small class="text-body-secondary" th:text="${#temporals.format(board.createdTime, 'dd MMM yyyy')}">20 April 2024</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</main>
+<div th:replace="~{fragments/modals :: modals}"></div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+        integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+        integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+        crossorigin="anonymous"></script>
+<script type="text/javascript" th:src="@{/js/createWorkspace.js}"></script>
+<script type="text/javascript" th:src="@{/js/createBoard.js}"></script>
+<script type="text/javascript" th:src="@{/js/addUserToWorkspace.js}"></script>
+</body>
+</html>
